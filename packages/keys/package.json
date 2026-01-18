@@ -1,7 +1,7 @@
 {
   "name": "@tanstack/keys",
   "version": "0.0.0",
-  "description": "Framework-agnostic keys for TanStack libraries",
+  "description": "Type-safe, framework-agnostic keyboard hotkey management for the browser",
   "author": "Tanner Linsley",
   "license": "MIT",
   "repository": {
@@ -16,7 +16,12 @@
   },
   "keywords": [
     "tanstack",
-    "keys"
+    "keys",
+    "hotkeys",
+    "keyboard",
+    "shortcuts",
+    "keybindings",
+    "typescript"
   ],
   "scripts": {
     "clean": "premove ./build ./dist",
@@ -49,8 +54,5 @@
   "files": [
     "dist/",
     "src"
-  ],
-  "dependencies": {
-    "@tanstack/store": "^0.8.0"
-  }
+  ]
 }

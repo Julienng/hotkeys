@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@tanstack/solid-keys": "^0.0.0",
-    "@tanstack/keys": "^0.0.0",
     "solid-js": "^1.9.10"
   },
   "devDependencies": {

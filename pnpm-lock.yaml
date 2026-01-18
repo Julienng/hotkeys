@@ -77,9 +77,6 @@ importers:
 
   examples/react/basic:
     dependencies:
-      '@tanstack/keys':
-        specifier: ^0.0.0
-        version: link:../../../packages/keys
       '@tanstack/react-keys':
         specifier: ^0.0.0
         version: link:../../../packages/react-keys
@@ -108,9 +105,6 @@ importers:
 
   examples/react/devtools:
     dependencies:
-      '@tanstack/keys':
-        specifier: ^0.0.0
-        version: link:../../../packages/keys
       '@tanstack/react-keys':
         specifier: ^0.0.0
         version: link:../../../packages/react-keys
@@ -142,9 +136,6 @@ importers:
 
   examples/solid/basic:
     dependencies:
-      '@tanstack/keys':
-        specifier: ^0.0.0
-        version: link:../../../packages/keys
       '@tanstack/solid-keys':
         specifier: ^0.0.0
         version: link:../../../packages/solid-keys
@@ -164,9 +155,6 @@ importers:
 
   examples/solid/devtools:
     dependencies:
-      '@tanstack/keys':
-        specifier: ^0.0.0
-        version: link:../../../packages/keys
       '@tanstack/solid-keys':
         specifier: ^0.0.0
         version: link:../../../packages/solid-keys
@@ -187,11 +175,7 @@ importers:
         specifier: ^2.11.10
         version: 2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.10)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(yaml@2.8.2))
 
-  packages/keys:
-    dependencies:
-      '@tanstack/store':
-        specifier: ^0.8.0
-        version: 0.8.0
+  packages/keys: {}
 
   packages/keys-devtools:
     dependencies:
@@ -204,9 +188,6 @@ importers:
       '@tanstack/keys':
         specifier: workspace:*
         version: link:../keys
-      '@tanstack/react-store':
-        specifier: ^0.8.0
-        version: 0.8.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react-dom:
         specifier: '>=16.8'
         version: 19.2.3(react@19.2.3)
@@ -1299,12 +1280,6 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0
-
-  '@tanstack/react-store@0.8.0':
-    resolution: {integrity: sha512-1vG9beLIuB7q69skxK9r5xiLN3ztzIPfSQSs0GfeqWGO2tGIyInZx0x1COhpx97RKaONSoAb8C3dxacWksm1ow==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@tanstack/solid-store@0.8.0':
     resolution: {integrity: sha512-JwqTedbxyOGw7mfmdGkB0RGgefRCw/tNauc8tlMcaS1mV5wTFT8c1KIB3LgttuHaanMJEBeqQJ7bc/R0WTP1fA==}
@@ -3256,11 +3231,6 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
-  use-sync-external-store@1.6.0:
-    resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
@@ -4440,13 +4410,6 @@ snapshots:
       - eslint-import-resolver-node
       - supports-color
       - typescript
-
-  '@tanstack/react-store@0.8.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
-    dependencies:
-      '@tanstack/store': 0.8.0
-      react: 19.2.3
-      react-dom: 19.2.3(react@19.2.3)
-      use-sync-external-store: 1.6.0(react@19.2.3)
 
   '@tanstack/solid-store@0.8.0(solid-js@1.9.10)':
     dependencies:
@@ -6545,10 +6508,6 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
-
-  use-sync-external-store@1.6.0(react@19.2.3):
-    dependencies:
-      react: 19.2.3
 
   util-deprecate@1.0.2: {}
 
