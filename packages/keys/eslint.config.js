@@ -8,4 +8,16 @@ export default [
   {
     rules: {},
   },
+  {
+    files: ['tests/**/*.ts'],
+    languageOptions: {
+      globals: {
+        KeyboardEvent: 'readonly',
+        document: 'readonly',
+        window: 'readonly',
+        Event: 'readonly',
+        EventTarget: 'readonly',
+      },
+    },
+  },
 ]

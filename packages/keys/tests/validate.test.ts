@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import {
-  assertValidHotkey,
-  checkHotkey,
-  validateHotkey,
-} from '../src/validate'
+import { assertValidHotkey, checkHotkey, validateHotkey } from '../src/validate'
 
 describe('validateHotkey', () => {
   describe('valid hotkeys', () => {
@@ -48,7 +44,9 @@ describe('validateHotkey', () => {
     it('should report unknown modifiers', () => {
       const result = validateHotkey('Unknown+A')
       expect(result.valid).toBe(false)
-      expect(result.errors.some((e) => e.includes('Unknown modifier'))).toBe(true)
+      expect(result.errors.some((e) => e.includes('Unknown modifier'))).toBe(
+        true,
+      )
     })
   })
 
@@ -72,9 +70,9 @@ describe('validateHotkey', () => {
       const result = validateHotkey('Shift+2')
       expect(result.valid).toBe(true)
       expect(result.warnings.length).toBeGreaterThan(0)
-      expect(
-        result.warnings.some((w) => w.includes('keyboard layouts')),
-      ).toBe(true)
+      expect(result.warnings.some((w) => w.includes('keyboard layouts'))).toBe(
+        true,
+      )
     })
 
     it('should warn about Alt+Shift+letter', () => {
@@ -93,9 +91,7 @@ describe('validateHotkey', () => {
     it('should warn about unknown keys but still be valid', () => {
       const result = validateHotkey('Control+SomeWeirdKey')
       expect(result.valid).toBe(true) // Unknown keys are warnings, not errors
-      expect(
-        result.warnings.some((w) => w.includes('Unknown key')),
-      ).toBe(true)
+      expect(result.warnings.some((w) => w.includes('Unknown key'))).toBe(true)
     })
   })
 })

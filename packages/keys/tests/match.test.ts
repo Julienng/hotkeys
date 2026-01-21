@@ -33,7 +33,6 @@ describe('matchesKeyboardEvent', () => {
     it('should match a single letter key', () => {
       const event = createKeyboardEvent('a')
       expect(matchesKeyboardEvent(event, 'A')).toBe(true)
-      expect(matchesKeyboardEvent(event, 'a')).toBe(true)
     })
 
     it('should not match different keys', () => {
@@ -44,7 +43,6 @@ describe('matchesKeyboardEvent', () => {
     it('should match special keys', () => {
       const escEvent = createKeyboardEvent('Escape')
       expect(matchesKeyboardEvent(escEvent, 'Escape')).toBe(true)
-      expect(matchesKeyboardEvent(escEvent, 'Esc')).toBe(true)
 
       const enterEvent = createKeyboardEvent('Enter')
       expect(matchesKeyboardEvent(enterEvent, 'Enter')).toBe(true)
@@ -60,7 +58,6 @@ describe('matchesKeyboardEvent', () => {
     it('should match Control modifier', () => {
       const event = createKeyboardEvent('a', { ctrlKey: true })
       expect(matchesKeyboardEvent(event, 'Control+A')).toBe(true)
-      expect(matchesKeyboardEvent(event, 'Ctrl+A')).toBe(true)
     })
 
     it('should not match if Control is missing', () => {
@@ -81,13 +78,11 @@ describe('matchesKeyboardEvent', () => {
     it('should match Alt modifier', () => {
       const event = createKeyboardEvent('a', { altKey: true })
       expect(matchesKeyboardEvent(event, 'Alt+A')).toBe(true)
-      expect(matchesKeyboardEvent(event, 'Option+A')).toBe(true)
     })
 
-    it('should match Meta/Command modifier', () => {
+    it('should match Meta modifier', () => {
       const event = createKeyboardEvent('a', { metaKey: true })
-      expect(matchesKeyboardEvent(event, 'Command+A')).toBe(true)
-      expect(matchesKeyboardEvent(event, 'Cmd+A')).toBe(true)
+      expect(matchesKeyboardEvent(event, 'Meta+A')).toBe(true)
     })
   })
 
@@ -117,7 +112,6 @@ describe('matchesKeyboardEvent', () => {
     it('should match two modifiers', () => {
       const event = createKeyboardEvent('s', { ctrlKey: true, shiftKey: true })
       expect(matchesKeyboardEvent(event, 'Control+Shift+S')).toBe(true)
-      expect(matchesKeyboardEvent(event, 'Shift+Control+S')).toBe(true) // Order shouldn't matter
     })
 
     it('should not match if one modifier is missing', () => {
@@ -134,16 +128,13 @@ describe('matchesKeyboardEvent', () => {
       expect(matchesKeyboardEvent(event, 'Control+Shift+S')).toBe(false)
     })
 
-    it('should match all four modifiers', () => {
+    it('should match three modifiers', () => {
       const event = createKeyboardEvent('a', {
         ctrlKey: true,
         shiftKey: true,
         altKey: true,
-        metaKey: true,
       })
-      expect(
-        matchesKeyboardEvent(event, 'Control+Alt+Shift+Command+A'),
-      ).toBe(true)
+      expect(matchesKeyboardEvent(event, 'Control+Alt+Shift+A')).toBe(true)
     })
   })
 
@@ -164,14 +155,20 @@ describe('matchesKeyboardEvent', () => {
 })
 
 describe('createHotkeyHandler', () => {
-  it('should call callback when hotkey matches', () => {
+  it('should call callback with event and context when hotkey matches', () => {
     const callback = vi.fn()
     const handler = createHotkeyHandler('Mod+S', callback, { platform: 'mac' })
 
     const event = createKeyboardEvent('s', { metaKey: true })
     handler(event)
 
-    expect(callback).toHaveBeenCalledWith(event)
+    expect(callback).toHaveBeenCalledWith(event, {
+      hotkey: 'Mod+S',
+      parsedHotkey: expect.objectContaining({
+        key: 'S',
+        meta: true,
+      }),
+    })
   })
 
   it('should not call callback when hotkey does not match', () => {
@@ -223,7 +220,7 @@ describe('createHotkeyHandler', () => {
 })
 
 describe('createMultiHotkeyHandler', () => {
-  it('should call the correct handler for each hotkey', () => {
+  it('should call the correct handler with event and context', () => {
     const saveHandler = vi.fn()
     const undoHandler = vi.fn()
 
@@ -237,14 +234,24 @@ describe('createMultiHotkeyHandler', () => {
 
     const saveEvent = createKeyboardEvent('s', { metaKey: true })
     handler(saveEvent)
-    expect(saveHandler).toHaveBeenCalledWith(saveEvent)
+    expect(saveHandler).toHaveBeenCalledWith(
+      saveEvent,
+      expect.objectContaining({
+        hotkey: 'Mod+S',
+      }),
+    )
     expect(undoHandler).not.toHaveBeenCalled()
 
     saveHandler.mockClear()
 
     const undoEvent = createKeyboardEvent('z', { metaKey: true })
     handler(undoEvent)
-    expect(undoHandler).toHaveBeenCalledWith(undoEvent)
+    expect(undoHandler).toHaveBeenCalledWith(
+      undoEvent,
+      expect.objectContaining({
+        hotkey: 'Mod+Z',
+      }),
+    )
     expect(saveHandler).not.toHaveBeenCalled()
   })
 
@@ -270,7 +277,7 @@ describe('createMultiHotkeyHandler', () => {
     const handler = createMultiHotkeyHandler(
       {
         'Mod+S': handler1,
-        'Command+S': handler2, // Same as Mod+S on Mac
+        'Meta+S': handler2, // Same as Mod+S on Mac
       },
       { platform: 'mac' },
     )

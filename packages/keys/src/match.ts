@@ -1,4 +1,9 @@
-import type { Hotkey, ParsedHotkey } from './types'
+import type {
+  Hotkey,
+  HotkeyCallback,
+  HotkeyCallbackContext,
+  ParsedHotkey,
+} from './types'
 import { detectPlatform, normalizeKeyName } from './constants'
 import { parseHotkey } from './parse'
 
@@ -59,6 +64,18 @@ export function matchesKeyboardEvent(
 }
 
 /**
+ * Options for creating a hotkey handler.
+ */
+export interface CreateHotkeyHandlerOptions {
+  /** Prevent the default browser action when the hotkey matches */
+  preventDefault?: boolean
+  /** Stop event propagation when the hotkey matches */
+  stopPropagation?: boolean
+  /** The target platform for resolving 'Mod' */
+  platform?: 'mac' | 'windows' | 'linux'
+}
+
+/**
  * Creates a keyboard event handler that calls the callback when the hotkey matches.
  *
  * @param hotkey - The hotkey string or ParsedHotkey to match
@@ -68,7 +85,8 @@ export function matchesKeyboardEvent(
  *
  * @example
  * ```ts
- * const handler = createHotkeyHandler('Mod+S', (event) => {
+ * const handler = createHotkeyHandler('Mod+S', (event, { hotkey, parsedHotkey }) => {
+ *   console.log(`${hotkey} was pressed`)
  *   handleSave()
  * }, { preventDefault: true })
  *
@@ -77,31 +95,31 @@ export function matchesKeyboardEvent(
  */
 export function createHotkeyHandler(
   hotkey: Hotkey | ParsedHotkey,
-  callback: (event: KeyboardEvent) => void,
-  options: {
-    /** Prevent the default browser action when the hotkey matches */
-    preventDefault?: boolean
-    /** Stop event propagation when the hotkey matches */
-    stopPropagation?: boolean
-    /** The target platform for resolving 'Mod' */
-    platform?: 'mac' | 'windows' | 'linux'
-  } = {},
+  callback: HotkeyCallback,
+  options: CreateHotkeyHandlerOptions = {},
 ): (event: KeyboardEvent) => void {
   const { preventDefault = false, stopPropagation = false, platform } = options
+  const resolvedPlatform = platform ?? detectPlatform()
+
+  const hotkeyString: Hotkey =
+    typeof hotkey === 'string' ? hotkey : formatParsedHotkey(hotkey)
   const parsed =
-    typeof hotkey === 'string'
-      ? parseHotkey(hotkey, platform ?? detectPlatform())
-      : hotkey
+    typeof hotkey === 'string' ? parseHotkey(hotkey, resolvedPlatform) : hotkey
+
+  const context: HotkeyCallbackContext = {
+    hotkey: hotkeyString,
+    parsedHotkey: parsed,
+  }
 
   return (event: KeyboardEvent) => {
-    if (matchesKeyboardEvent(event, parsed, platform)) {
+    if (matchesKeyboardEvent(event, parsed, resolvedPlatform)) {
       if (preventDefault) {
         event.preventDefault()
       }
       if (stopPropagation) {
         event.stopPropagation()
       }
-      callback(event)
+      callback(event, context)
     }
   }
 }
@@ -116,38 +134,37 @@ export function createHotkeyHandler(
  * @example
  * ```ts
  * const handler = createMultiHotkeyHandler({
- *   'Mod+S': () => handleSave(),
- *   'Mod+Z': () => handleUndo(),
- *   'Mod+Shift+Z': () => handleRedo(),
+ *   'Mod+S': (event, { hotkey }) => handleSave(),
+ *   'Mod+Z': (event, { hotkey }) => handleUndo(),
+ *   'Mod+Shift+Z': (event, { hotkey }) => handleRedo(),
  * })
  *
  * document.addEventListener('keydown', handler)
  * ```
  */
 export function createMultiHotkeyHandler(
-  handlers: { [K in Hotkey]?: (event: KeyboardEvent) => void },
-  options: {
-    /** Prevent the default browser action when any hotkey matches */
-    preventDefault?: boolean
-    /** Stop event propagation when any hotkey matches */
-    stopPropagation?: boolean
-    /** The target platform for resolving 'Mod' */
-    platform?: 'mac' | 'windows' | 'linux'
-  } = {},
+  handlers: { [K in Hotkey]?: HotkeyCallback },
+  options: CreateHotkeyHandlerOptions = {},
 ): (event: KeyboardEvent) => void {
   const { preventDefault = false, stopPropagation = false, platform } = options
   const resolvedPlatform = platform ?? detectPlatform()
 
   // Pre-parse all hotkeys for efficiency
   const parsedHandlers = Object.entries(handlers)
-    .filter((entry): entry is [string, (event: KeyboardEvent) => void] => entry[1] !== undefined)
-    .map(([hotkey, handler]) => ({
-      parsed: parseHotkey(hotkey as Hotkey, resolvedPlatform),
-      handler,
-    }))
+    .filter(
+      (entry): entry is [string, HotkeyCallback] => entry[1] !== undefined,
+    )
+    .map(([hotkey, handler]) => {
+      const parsed = parseHotkey(hotkey as Hotkey, resolvedPlatform)
+      const context: HotkeyCallbackContext = {
+        hotkey: hotkey as Hotkey,
+        parsedHotkey: parsed,
+      }
+      return { parsed, handler, context }
+    })
 
   return (event: KeyboardEvent) => {
-    for (const { parsed, handler } of parsedHandlers) {
+    for (const { parsed, handler, context } of parsedHandlers) {
       if (matchesKeyboardEvent(event, parsed, resolvedPlatform)) {
         if (preventDefault) {
           event.preventDefault()
@@ -155,9 +172,25 @@ export function createMultiHotkeyHandler(
         if (stopPropagation) {
           event.stopPropagation()
         }
-        handler(event)
+        handler(event, context)
         return // Only handle the first match
       }
     }
   }
+}
+
+/**
+ * Formats a ParsedHotkey back to a hotkey string.
+ * Used internally to provide the hotkey string in callback context.
+ */
+function formatParsedHotkey(parsed: ParsedHotkey): Hotkey {
+  const parts: string[] = []
+
+  if (parsed.ctrl) parts.push('Control')
+  if (parsed.alt) parts.push('Alt')
+  if (parsed.shift) parts.push('Shift')
+  if (parsed.meta) parts.push('Meta')
+  parts.push(parsed.key)
+
+  return parts.join('+') as Hotkey
 }

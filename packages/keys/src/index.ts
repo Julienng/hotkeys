@@ -13,12 +13,22 @@ export type {
   NavigationKey,
   EditingKey,
   Key,
+  HeldKey,
   // Hotkey types
   Hotkey,
   ParsedHotkey,
+  // Callback types
+  HotkeyCallback,
+  HotkeyCallbackContext,
   // Option types
+  HotkeyOptions,
   FormatDisplayOptions,
   ValidationResult,
+  // Sequence types
+  HotkeySequence,
+  SequenceOptions,
+  // Registration types
+  HotkeyRegistration,
 } from './types'
 
 // =============================================================================
@@ -62,6 +72,7 @@ export {
   matchesKeyboardEvent,
   createHotkeyHandler,
   createMultiHotkeyHandler,
+  type CreateHotkeyHandlerOptions,
 } from './match'
 
 // =============================================================================
@@ -69,3 +80,30 @@ export {
 // =============================================================================
 
 export { validateHotkey, assertValidHotkey, checkHotkey } from './validate'
+
+// =============================================================================
+// Manager (Singleton)
+// =============================================================================
+
+export { HotkeyManager, getHotkeyManager } from './manager'
+
+// =============================================================================
+// Key State Tracking
+// =============================================================================
+
+export {
+  KeyStateTracker,
+  getKeyStateTracker,
+  type KeyStateTrackerState,
+  type KeyStateListener,
+} from './key-state'
+
+// =============================================================================
+// Sequence Matching
+// =============================================================================
+
+export {
+  SequenceManager,
+  getSequenceManager,
+  createSequenceMatcher,
+} from './sequence'

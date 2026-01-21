@@ -82,9 +82,7 @@ describe('useHotkey', () => {
     const callback = vi.fn()
     const addEventListenerSpy = vi.spyOn(document, 'addEventListener')
 
-    renderHook(() =>
-      useHotkey('Escape', callback, { eventType: 'keyup' }),
-    )
+    renderHook(() => useHotkey('Escape', callback, { eventType: 'keyup' }))
 
     expect(addEventListenerSpy).toHaveBeenCalledWith(
       'keyup',

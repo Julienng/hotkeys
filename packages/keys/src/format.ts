@@ -1,4 +1,4 @@
-import type { FormatDisplayOptions, Hotkey, ParsedHotkey } from './types'
+import type { FormatDisplayOptions, ParsedHotkey } from './types'
 import {
   KEY_DISPLAY_SYMBOLS,
   MAC_MODIFIER_SYMBOLS,
@@ -59,7 +59,7 @@ export function formatHotkey(parsed: ParsedHotkey): string {
  * ```
  */
 export function formatForDisplay(
-  hotkey: Hotkey | ParsedHotkey,
+  hotkey: string | ParsedHotkey,
   options: FormatDisplayOptions = {},
 ): string {
   const platform = options.platform ?? detectPlatform()
@@ -125,7 +125,7 @@ function formatForStandard(parsed: ParsedHotkey): string {
  * @returns A formatted string with platform-appropriate labels
  */
 export function formatWithLabels(
-  hotkey: Hotkey | ParsedHotkey,
+  hotkey: string | ParsedHotkey,
   platform: 'mac' | 'windows' | 'linux' = detectPlatform(),
 ): string {
   const parsed =

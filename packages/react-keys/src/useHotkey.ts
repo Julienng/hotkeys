@@ -1,37 +1,33 @@
 import { useEffect, useRef } from 'react'
 import {
   type Hotkey,
+  type HotkeyCallback,
+  type HotkeyOptions,
   type ParsedHotkey,
-  createHotkeyHandler,
-  parseHotkey,
+  getHotkeyManager,
 } from '@tanstack/keys'
 
-export interface UseHotkeyOptions {
+export interface UseHotkeyOptions extends Omit<HotkeyOptions, 'enabled'> {
   /** Whether the hotkey is enabled. Defaults to true. */
   enabled?: boolean
-  /** Prevent the default browser action when the hotkey matches. */
-  preventDefault?: boolean
-  /** Stop event propagation when the hotkey matches. */
-  stopPropagation?: boolean
-  /** The target platform for resolving 'Mod'. Defaults to auto-detection. */
-  platform?: 'mac' | 'windows' | 'linux'
-  /** The event type to listen for. Defaults to 'keydown'. */
-  eventType?: 'keydown' | 'keyup'
 }
 
 /**
  * React hook for registering a keyboard hotkey.
  *
+ * Uses the singleton HotkeyManager for efficient event handling.
+ * The callback receives both the keyboard event and a context object
+ * containing the hotkey string and parsed hotkey.
+ *
  * @param hotkey - The hotkey string (e.g., 'Mod+S', 'Escape')
  * @param callback - The function to call when the hotkey is pressed
  * @param options - Options for the hotkey behavior
- * @returns A ref to attach to an element for scoped hotkeys, or undefined for global hotkeys
  *
  * @example
  * ```tsx
  * function SaveButton() {
- *   // Global hotkey
- *   useHotkey('Mod+S', () => {
+ *   useHotkey('Mod+S', (event, { hotkey, parsedHotkey }) => {
+ *     console.log(`${hotkey} was pressed`)
  *     handleSave()
  *   }, { preventDefault: true })
  *
@@ -41,55 +37,88 @@ export interface UseHotkeyOptions {
  *
  * @example
  * ```tsx
- * function Modal() {
- *   // Scoped hotkey - only active when element is focused
- *   const ref = useHotkey('Escape', () => {
- *     closeModal()
- *   }, { scope: 'local' })
+ * function Modal({ isOpen, onClose }) {
+ *   // Only active when modal is open
+ *   useHotkey('Escape', () => {
+ *     onClose()
+ *   }, { enabled: isOpen })
  *
- *   return <div ref={ref}>...</div>
+ *   if (!isOpen) return null
+ *   return <div className="modal">...</div>
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * function Editor() {
+ *   // Prevent repeated triggering while holding
+ *   useHotkey('Mod+S', () => {
+ *     save()
+ *   }, { preventDefault: true, requireReset: true })
+ *
+ *   return <div>...</div>
  * }
  * ```
  */
 export function useHotkey(
   hotkey: Hotkey | ParsedHotkey,
-  callback: (event: KeyboardEvent) => void,
+  callback: HotkeyCallback,
   options: UseHotkeyOptions = {},
 ): void {
-  const {
-    enabled = true,
-    preventDefault = false,
-    stopPropagation = false,
-    platform,
-    eventType = 'keydown',
-  } = options
+  const { enabled = true, ...hotkeyOptions } = options
 
-  // Use refs to avoid recreating the handler on every render
+  // Use refs to keep callback and hotkey stable across renders
   const callbackRef = useRef(callback)
   callbackRef.current = callback
 
-  const parsedRef = useRef<ParsedHotkey | null>(null)
-  if (typeof hotkey === 'string') {
-    parsedRef.current = parseHotkey(hotkey, platform)
-  } else {
-    parsedRef.current = hotkey
-  }
+  const hotkeyRef = useRef(hotkey)
+  hotkeyRef.current = hotkey
 
   useEffect(() => {
     if (!enabled) {
       return
     }
 
-    const handler = createHotkeyHandler(
-      parsedRef.current!,
-      (event) => callbackRef.current(event),
-      { preventDefault, stopPropagation, platform },
+    const hotkeyValue = hotkeyRef.current
+    const hotkeyString: Hotkey =
+      typeof hotkeyValue === 'string'
+        ? hotkeyValue
+        : formatParsedHotkey(hotkeyValue)
+
+    const manager = getHotkeyManager()
+    const unregister = manager.register(
+      hotkeyString,
+      (event, context) => callbackRef.current(event, context),
+      {
+        ...hotkeyOptions,
+        enabled: true,
+      },
     )
 
-    document.addEventListener(eventType, handler)
+    return unregister
+  }, [
+    enabled,
+    hotkeyOptions.preventDefault,
+    hotkeyOptions.stopPropagation,
+    hotkeyOptions.platform,
+    hotkeyOptions.eventType,
+    hotkeyOptions.requireReset,
+    // Re-register if hotkey changes (serialize for comparison)
+    typeof hotkey === 'string' ? hotkey : JSON.stringify(hotkey),
+  ])
+}
 
-    return () => {
-      document.removeEventListener(eventType, handler)
-    }
-  }, [enabled, preventDefault, stopPropagation, platform, eventType])
+/**
+ * Formats a ParsedHotkey back to a hotkey string.
+ */
+function formatParsedHotkey(parsed: ParsedHotkey): Hotkey {
+  const parts: string[] = []
+
+  if (parsed.ctrl) parts.push('Control')
+  if (parsed.alt) parts.push('Alt')
+  if (parsed.shift) parts.push('Shift')
+  if (parsed.meta) parts.push('Meta')
+  parts.push(parsed.key)
+
+  return parts.join('+') as Hotkey
 }

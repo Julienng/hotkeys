@@ -1,5 +1,10 @@
-import type { Hotkey, ValidationResult } from './types'
-import { ALL_KEYS, LETTER_KEYS, MODIFIER_ALIASES, NUMBER_KEYS } from './constants'
+import type { ValidationResult } from './types'
+import {
+  ALL_KEYS,
+  LETTER_KEYS,
+  MODIFIER_ALIASES,
+  NUMBER_KEYS,
+} from './constants'
 import { parseHotkey } from './parse'
 
 /**
@@ -29,7 +34,7 @@ import { parseHotkey } from './parse'
  * // { valid: false, warnings: [], errors: ['Hotkey cannot be empty'] }
  * ```
  */
-export function validateHotkey(hotkey: Hotkey): ValidationResult {
+export function validateHotkey(hotkey: string): ValidationResult {
   const warnings: string[] = []
   const errors: string[] = []
 
@@ -59,7 +64,8 @@ export function validateHotkey(hotkey: Hotkey): ValidationResult {
 
   // Check for unknown modifiers
   for (const modifier of modifierParts) {
-    const normalized = MODIFIER_ALIASES[modifier] ?? MODIFIER_ALIASES[modifier.toLowerCase()]
+    const normalized =
+      MODIFIER_ALIASES[modifier] ?? MODIFIER_ALIASES[modifier.toLowerCase()]
     if (!normalized) {
       errors.push(`Unknown modifier: '${modifier}'`)
     }
@@ -182,7 +188,7 @@ function isNumberKey(key: string): boolean {
  * assertValidHotkey('') // Throws Error: Invalid hotkey: Hotkey cannot be empty
  * ```
  */
-export function assertValidHotkey(hotkey: Hotkey): void {
+export function assertValidHotkey(hotkey: string): void {
   const result = validateHotkey(hotkey)
   if (!result.valid) {
     throw new Error(`Invalid hotkey '${hotkey}': ${result.errors.join(', ')}`)
@@ -203,7 +209,7 @@ export function assertValidHotkey(hotkey: Hotkey): void {
  * // Returns: true
  * ```
  */
-export function checkHotkey(hotkey: Hotkey): boolean {
+export function checkHotkey(hotkey: string): boolean {
   const result = validateHotkey(hotkey)
 
   if (result.errors.length > 0) {

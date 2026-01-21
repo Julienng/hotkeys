@@ -64,7 +64,17 @@ export type LetterKey =
 /**
  * Number keys 0-9.
  */
-export type NumberKey = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+export type NumberKey =
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7'
+  | '8'
+  | '9'
 
 /**
  * Function keys F1-F12.
@@ -116,6 +126,12 @@ export type Key =
   | FunctionKey
   | NavigationKey
   | EditingKey
+
+/**
+ * Keys that can be tracked as "held" (pressed down).
+ * Includes both modifier keys and regular keys.
+ */
+export type HeldKey = CanonicalModifier | Key
 
 // =============================================================================
 // Hotkey Types
@@ -184,17 +200,19 @@ type ThreeModifierHotkey = `${ThreeModifierCombo}+${CommonKey}`
  * - Single modifier + common key (Control+S, Mod+A, etc.)
  * - Two modifiers + common key (Mod+Shift+S, Control+Alt+A, etc.)
  * - Three modifiers + common key (Control+Alt+Shift+A, etc.)
- * - Any other string is accepted via the escape hatch
+ *
+ * Use canonical modifier names:
+ * - `Control` (not Ctrl)
+ * - `Alt` (not Option)
+ * - `Meta` (not Command/Cmd)
+ * - `Mod` for cross-platform (Command on Mac, Control elsewhere)
  *
  * @example
  * ```ts
- * const save: Hotkey = 'Mod+S'           // autocomplete ✓
- * const saveAs: Hotkey = 'Mod+Shift+S'   // autocomplete ✓
- * const custom: Hotkey = 'Ctrl+Alt+F5'   // accepted via escape hatch
+ * const save: Hotkey = 'Mod+S'           // ✓ Cross-platform save
+ * const saveAs: Hotkey = 'Mod+Shift+S'   // ✓ Cross-platform save as
+ * const macOnly: Hotkey = 'Meta+S'       // ✓ Command+S on Mac only
  * ```
- *
- * Note: Modifier aliases (Ctrl, Cmd, Option) are resolved at runtime.
- * The type system uses canonical names for efficiency.
  */
 export type Hotkey =
   | Key
@@ -238,4 +256,105 @@ export interface ValidationResult {
   warnings: string[]
   /** Error messages about invalid syntax */
   errors: string[]
+}
+
+// =============================================================================
+// Callback Types
+// =============================================================================
+
+/**
+ * Context passed to hotkey callbacks along with the keyboard event.
+ */
+export interface HotkeyCallbackContext {
+  /** The original hotkey string that was registered */
+  hotkey: Hotkey
+  /** The parsed representation of the hotkey */
+  parsedHotkey: ParsedHotkey
+}
+
+/**
+ * Callback function type for hotkey handlers.
+ *
+ * @param event - The keyboard event that triggered the hotkey
+ * @param context - Additional context including the hotkey and parsed hotkey
+ *
+ * @example
+ * ```ts
+ * const handler: HotkeyCallback = (event, { hotkey, parsedHotkey }) => {
+ *   console.log(`Hotkey ${hotkey} was pressed`)
+ *   console.log(`Modifiers:`, parsedHotkey.modifiers)
+ * }
+ * ```
+ */
+export type HotkeyCallback = (
+  event: KeyboardEvent,
+  context: HotkeyCallbackContext,
+) => void
+
+// =============================================================================
+// Options Types
+// =============================================================================
+
+/**
+ * Options for registering a hotkey.
+ */
+export interface HotkeyOptions {
+  /** Prevent the default browser action when the hotkey matches */
+  preventDefault?: boolean
+  /** Stop event propagation when the hotkey matches */
+  stopPropagation?: boolean
+  /** The target platform for resolving 'Mod' */
+  platform?: 'mac' | 'windows' | 'linux'
+  /** The event type to listen for. Defaults to 'keydown' */
+  eventType?: 'keydown' | 'keyup'
+  /** If true, only trigger once until all keys are released. Default: false */
+  requireReset?: boolean
+  /** Whether the hotkey is enabled. Defaults to true */
+  enabled?: boolean
+}
+
+// =============================================================================
+// Sequence Types
+// =============================================================================
+
+/**
+ * A sequence of hotkeys for Vim-style shortcuts.
+ *
+ * @example
+ * ```ts
+ * const gotoTop: HotkeySequence = ['G', 'G']  // gg
+ * const deleteLine: HotkeySequence = ['D', 'D']  // dd
+ * const deleteWord: HotkeySequence = ['D', 'I', 'W']  // diw
+ * ```
+ */
+export type HotkeySequence = Hotkey[]
+
+/**
+ * Options for hotkey sequence matching.
+ */
+export interface SequenceOptions extends HotkeyOptions {
+  /** Timeout between keys in milliseconds. Default: 1000 */
+  timeout?: number
+}
+
+// =============================================================================
+// Registration Types
+// =============================================================================
+
+/**
+ * A registered hotkey handler in the HotkeyManager.
+ */
+export interface HotkeyRegistration {
+  /** Unique identifier for this registration */
+  id: string
+  /** The original hotkey string */
+  hotkey: Hotkey
+  /** The parsed hotkey */
+  parsedHotkey: ParsedHotkey
+  /** The callback to invoke */
+  callback: HotkeyCallback
+  /** Options for this registration */
+  options: HotkeyOptions
+  /** Whether this registration has fired and needs reset (for requireReset) */
+  hasFired: boolean
 }

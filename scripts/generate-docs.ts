@@ -14,28 +14,23 @@ await generateReferenceDocs({
     },
     {
       name: 'react-keys',
-      entryPoints: [
-        resolve(__dirname, '../packages/react-keys/src/index.ts'),
-      ],
-      tsconfig: resolve(
-        __dirname,
-        '../packages/react-keys/tsconfig.docs.json',
-      ),
+      entryPoints: [resolve(__dirname, '../packages/react-keys/src/index.ts')],
+      tsconfig: resolve(__dirname, '../packages/react-keys/tsconfig.docs.json'),
       outputDir: resolve(__dirname, '../docs/framework/react/reference'),
       exclude: ['packages/keys/**/*'],
     },
-    {
-      name: 'solid-keys',
-      entryPoints: [
-        resolve(__dirname, '../packages/solid-keys/src/index.ts'),
-      ],
-      tsconfig: resolve(
-        __dirname,
-        '../packages/solid-keys/tsconfig.docs.json',
-      ),
-      outputDir: resolve(__dirname, '../docs/framework/solid/reference'),
-      exclude: ['packages/keys/**/*'],
-    },
+    // {
+    //   name: 'solid-keys',
+    //   entryPoints: [
+    //     resolve(__dirname, '../packages/solid-keys/src/index.ts'),
+    //   ],
+    //   tsconfig: resolve(
+    //     __dirname,
+    //     '../packages/solid-keys/tsconfig.docs.json',
+    //   ),
+    //   outputDir: resolve(__dirname, '../docs/framework/solid/reference'),
+    //   exclude: ['packages/keys/**/*'],
+    // },
   ],
 })
 

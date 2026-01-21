@@ -1,4 +1,4 @@
-import type { CanonicalModifier, Hotkey, ParsedHotkey } from './types'
+import type { CanonicalModifier, ParsedHotkey } from './types'
 import {
   MODIFIER_ALIASES,
   MODIFIER_ORDER,
@@ -22,7 +22,7 @@ import {
  * ```
  */
 export function parseHotkey(
-  hotkey: Hotkey,
+  hotkey: string,
   platform: 'mac' | 'windows' | 'linux' = detectPlatform(),
 ): ParsedHotkey {
   const parts = hotkey.split('+')
@@ -37,7 +37,8 @@ export function parseHotkey(
       key = normalizeKeyName(part)
     } else {
       // All other parts are modifiers
-      const alias = MODIFIER_ALIASES[part] ?? MODIFIER_ALIASES[part.toLowerCase()]
+      const alias =
+        MODIFIER_ALIASES[part] ?? MODIFIER_ALIASES[part.toLowerCase()]
 
       if (alias) {
         const resolved = resolveModifier(alias, platform)
@@ -88,7 +89,7 @@ export function parseHotkey(
  * ```
  */
 export function normalizeHotkey(
-  hotkey: Hotkey,
+  hotkey: string,
   platform: 'mac' | 'windows' | 'linux' = detectPlatform(),
 ): string {
   const parsed = parseHotkey(hotkey, platform)
