@@ -717,4 +717,101 @@ describe('HotkeyManager', () => {
       }
     })
   })
+
+  describe('conflict detection', () => {
+    it('should warn by default when registering a conflicting hotkey', () => {
+      const manager = HotkeyManager.getInstance()
+      const callback1 = vi.fn()
+      const callback2 = vi.fn()
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      manager.register('Mod+S', callback1)
+      manager.register('Mod+S', callback2)
+
+      expect(warnSpy).toHaveBeenCalled()
+      expect(warnSpy.mock.calls[0]?.[0]).toContain('already registered')
+      expect(manager.getRegistrationCount()).toBe(2)
+
+      warnSpy.mockRestore()
+    })
+
+    it('should throw error when conflictBehavior is "error"', () => {
+      const manager = HotkeyManager.getInstance()
+      const callback1 = vi.fn()
+      const callback2 = vi.fn()
+
+      manager.register('Mod+S', callback1)
+
+      expect(() => {
+        manager.register('Mod+S', callback2, { conflictBehavior: 'error' })
+      }).toThrow('already registered')
+
+      expect(manager.getRegistrationCount()).toBe(1)
+    })
+
+    it('should replace existing registration when conflictBehavior is "replace"', () => {
+      const manager = HotkeyManager.getInstance()
+      const callback1 = vi.fn()
+      const callback2 = vi.fn()
+
+      manager.register('Mod+S', callback1, { platform: 'mac' })
+      expect(manager.getRegistrationCount()).toBe(1)
+
+      manager.register('Mod+S', callback2, {
+        conflictBehavior: 'replace',
+        platform: 'mac',
+      })
+      expect(manager.getRegistrationCount()).toBe(1)
+
+      document.dispatchEvent(
+        createKeyboardEvent('keydown', 's', { metaKey: true }),
+      )
+
+      expect(callback1).not.toHaveBeenCalled()
+      expect(callback2).toHaveBeenCalledOnce()
+    })
+
+    it('should allow multiple registrations when conflictBehavior is "allow"', () => {
+      const manager = HotkeyManager.getInstance()
+      const callback1 = vi.fn()
+      const callback2 = vi.fn()
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      manager.register('Mod+S', callback1, { platform: 'mac' })
+      manager.register('Mod+S', callback2, {
+        conflictBehavior: 'allow',
+        platform: 'mac',
+      })
+
+      expect(warnSpy).not.toHaveBeenCalled()
+      expect(manager.getRegistrationCount()).toBe(2)
+
+      document.dispatchEvent(
+        createKeyboardEvent('keydown', 's', { metaKey: true }),
+      )
+
+      expect(callback1).toHaveBeenCalledOnce()
+      expect(callback2).toHaveBeenCalledOnce()
+
+      warnSpy.mockRestore()
+    })
+
+    it('should not conflict when same hotkey is registered on different targets', () => {
+      const manager = HotkeyManager.getInstance()
+      const callback1 = vi.fn()
+      const callback2 = vi.fn()
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const div1 = document.createElement('div')
+      const div2 = document.createElement('div')
+
+      manager.register('Mod+S', callback1, { target: div1 })
+      manager.register('Mod+S', callback2, { target: div2 })
+
+      expect(warnSpy).not.toHaveBeenCalled()
+      expect(manager.getRegistrationCount()).toBe(2)
+
+      warnSpy.mockRestore()
+    })
+  })
 })

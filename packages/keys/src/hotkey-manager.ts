@@ -9,6 +9,16 @@ import type {
 } from './hotkey'
 
 /**
+ * Behavior when registering a hotkey that conflicts with an existing registration.
+ *
+ * - `'warn'` - Log a warning to the console but allow both registrations (default)
+ * - `'error'` - Throw an error and prevent the new registration
+ * - `'replace'` - Unregister the existing hotkey and register the new one
+ * - `'allow'` - Allow multiple registrations of the same hotkey without warning
+ */
+export type ConflictBehavior = 'warn' | 'error' | 'replace' | 'allow'
+
+/**
  * Options for registering a hotkey.
  */
 export interface HotkeyOptions {
@@ -28,6 +38,8 @@ export interface HotkeyOptions {
   stopPropagation?: boolean
   /** The DOM element to attach the event listener to. Defaults to document. */
   target?: HTMLElement | Document | Window | null
+  /** Behavior when this hotkey conflicts with an existing registration on the same target. Defaults to 'warn' */
+  conflictBehavior?: ConflictBehavior
 }
 
 /**
@@ -112,6 +124,7 @@ const defaultHotkeyOptions: Omit<
   requireReset: false,
   enabled: true,
   ignoreInputs: true,
+  conflictBehavior: 'warn',
 }
 
 let registrationIdCounter = 0
@@ -219,6 +232,19 @@ export class HotkeyManager {
     const target =
       options.target ??
       (typeof document !== 'undefined' ? document : ({} as Document))
+
+    // Resolve conflict behavior
+    const conflictBehavior = options.conflictBehavior ?? 'warn'
+
+    // Check for existing registrations with the same hotkey and target
+    const conflictingRegistration = this.#findConflictingRegistration(
+      hotkey,
+      target,
+    )
+
+    if (conflictingRegistration) {
+      this.#handleConflict(conflictingRegistration, hotkey, conflictBehavior)
+    }
 
     const registration: HotkeyRegistration = {
       id,
@@ -506,6 +532,55 @@ export class HotkeyManager {
     }
 
     return false
+  }
+
+  /**
+   * Finds an existing registration with the same hotkey and target.
+   */
+  #findConflictingRegistration(
+    hotkey: Hotkey,
+    target: HTMLElement | Document | Window,
+  ): HotkeyRegistration | null {
+    for (const registration of this.#registrations.values()) {
+      if (registration.hotkey === hotkey && registration.target === target) {
+        return registration
+      }
+    }
+    return null
+  }
+
+  /**
+   * Handles conflicts between hotkey registrations based on conflict behavior.
+   */
+  #handleConflict(
+    conflictingRegistration: HotkeyRegistration,
+    hotkey: Hotkey,
+    conflictBehavior: ConflictBehavior,
+  ): void {
+    if (conflictBehavior === 'allow') {
+      return
+    }
+
+    if (conflictBehavior === 'warn') {
+      console.warn(
+        `Hotkey '${hotkey}' is already registered. Multiple handlers will be triggered. ` +
+          `Use conflictBehavior: 'replace' to replace the existing handler, ` +
+          `or conflictBehavior: 'allow' to suppress this warning.`,
+      )
+      return
+    }
+
+    if (conflictBehavior === 'error') {
+      throw new Error(
+        `Hotkey '${hotkey}' is already registered. ` +
+          `Use conflictBehavior: 'replace' to replace the existing handler, ` +
+          `or conflictBehavior: 'allow' to allow multiple registrations.`,
+      )
+    }
+
+    if (conflictBehavior === 'replace') {
+      this.#unregister(conflictingRegistration.id)
+    }
   }
 
   /**
