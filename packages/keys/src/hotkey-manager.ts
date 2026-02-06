@@ -578,9 +578,8 @@ export class HotkeyManager {
       )
     }
 
-    if (conflictBehavior === 'replace') {
-      this.#unregister(conflictingRegistration.id)
-    }
+    // At this point, conflictBehavior must be 'replace'
+    this.#unregister(conflictingRegistration.id)
   }
 
   /**
