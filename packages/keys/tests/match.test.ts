@@ -259,7 +259,9 @@ describe('matchesKeyboardEvent', () => {
         metaKey: true,
         code: 'KeyT', // uppercase
       })
-      expect(matchesKeyboardEvent(event2, 'Mod+Alt+t' as Hotkey, 'mac')).toBe(true)
+      expect(matchesKeyboardEvent(event2, 'Mod+Alt+t' as Hotkey, 'mac')).toBe(
+        true,
+      )
     })
   })
 
