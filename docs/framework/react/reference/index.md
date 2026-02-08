@@ -13,6 +13,7 @@ title: "@tanstack/react-keys"
 
 ## Functions
 
+- [useHeldKeyCodes](functions/useHeldKeyCodes.md)
 - [useHeldKeys](functions/useHeldKeys.md)
 - [useHotkey](functions/useHotkey.md)
 - [useHotkeyRecorder](functions/useHotkeyRecorder.md)

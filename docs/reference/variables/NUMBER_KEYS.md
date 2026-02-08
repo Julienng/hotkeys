@@ -9,7 +9,7 @@ title: NUMBER_KEYS
 const NUMBER_KEYS: Set<NumberKey>;
 ```
 
-Defined in: [constants.ts:179](https://github.com/TanStack/keys/blob/main/packages/keys/src/constants.ts#L179)
+Defined in: [constants.ts:209](https://github.com/TanStack/keys/blob/main/packages/keys/src/constants.ts#L209)
 
 Set of all valid number keys (0-9).
 

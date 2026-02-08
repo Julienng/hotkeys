@@ -9,7 +9,7 @@ title: resolveModifier
 function resolveModifier(modifier, platform): CanonicalModifier;
 ```
 
-Defined in: [constants.ts:123](https://github.com/TanStack/keys/blob/main/packages/keys/src/constants.ts#L123)
+Defined in: [constants.ts:153](https://github.com/TanStack/keys/blob/main/packages/keys/src/constants.ts#L153)
 
 Resolves the platform-adaptive 'Mod' modifier to the appropriate canonical modifier.
 

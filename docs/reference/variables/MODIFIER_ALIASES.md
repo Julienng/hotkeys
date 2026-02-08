@@ -9,7 +9,7 @@ title: MODIFIER_ALIASES
 const MODIFIER_ALIASES: Record<string, CanonicalModifier | "Mod">;
 ```
 
-Defined in: [constants.ts:70](https://github.com/TanStack/keys/blob/main/packages/keys/src/constants.ts#L70)
+Defined in: [constants.ts:100](https://github.com/TanStack/keys/blob/main/packages/keys/src/constants.ts#L100)
 
 Maps modifier key aliases to their canonical form or platform-adaptive 'Mod'.
 
