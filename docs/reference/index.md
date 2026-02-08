@@ -30,6 +30,7 @@ title: "@tanstack/keys"
 ## Type Aliases
 
 - [CanonicalModifier](type-aliases/CanonicalModifier.md)
+- [ConflictBehavior](type-aliases/ConflictBehavior.md)
 - [EditingKey](type-aliases/EditingKey.md)
 - [FunctionKey](type-aliases/FunctionKey.md)
 - [HeldKey](type-aliases/HeldKey.md)
