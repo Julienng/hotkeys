@@ -28,8 +28,12 @@ import type {
  * ```
  */
 export function detectPlatform(): 'mac' | 'windows' | 'linux' {
-  if (typeof navigator === 'undefined' || navigator.userAgent == "Cloudflare-Workers") {
+  if (typeof navigator === 'undefined') {
     return 'linux' // Default for SSR
+  }
+
+  if (!navigator.platform) {
+    return 'linux' // Fallback runtimes implementing navigator partially, safe to fallback
   }
 
   const platform = navigator.platform.toLowerCase()
